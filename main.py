@@ -4,7 +4,43 @@ import pyttsx3
 import datetime
 import requests
 from pymongo import MongoClient
-# Function to speak text
+
+recog = s.Recognizer()
+client = MongoClient("mongodb://localhost:27017/")
+
+def add_records():
+ db = client["my_records"]
+ orders_collection = db["orders"]
+ try:
+    n = int(input("How many orders do you want to insert? "))
+ except ValueError:
+    print("Please enter a valid number.")
+    exit()
+ orders = []
+# Gather user input for each order
+ for i in range(n):
+    print(f"\nEnter details for order #{i+1}:")
+    try:
+        order_id = int(input("Order ID: "))
+        product = input("Product Name: ")
+        c_id = int(input("Customer ID (c_id): "))
+        order = {
+            "order_id": order_id,
+            "product": product,
+            "c_id": c_id
+        }
+        orders.append(order)
+    except ValueError:
+        print("Invalid input. Skipping this entry.")
+        continue
+  # Insert into MongoDB
+ if orders:
+    result = orders_collection.insert_many(orders)
+    print("\n✅ Orders inserted successfully!")
+    print("Inserted IDs:", result.inserted_ids)
+ else:
+    print("No valid orders to insert.")
+
 def speak(text):
     engine = pyttsx3.init()
     engine.say(text)
@@ -19,6 +55,7 @@ def Process(c):
         get_ip_location()
     elif "weather today" in c.lower():
         get_weather()   
+   # elif "add data" in c.lower():    
     else:
         speak("I cant understand")
    
@@ -107,7 +144,6 @@ def get_weather():
 
 # Function to listen and return recognized text
 def listen():
-    recog = s.Recognizer()
     print("Say something...")
     try:
         with s.Microphone() as source:
@@ -139,28 +175,42 @@ def listen():
         return ""
 
 if __name__ == "__main__":
-  # Connect to MongoDB
- client = MongoClient("mongodb://localhost:27017/")
- db = client["my_records"]
- orders_collection = db["orders"]
-
-# Documents to insert
- orders = [
-    {"order_id": 1, "product": "Ps4", "c_id": 100400},
-    {"order_id": 2, "product": "Xbox Series X", "c_id": 100401},
-    {"order_id": 3, "product": "Nintendo Switch", "c_id": 100402},
-    {"order_id": 4, "product": "Gaming PC", "c_id": 100403},
-    {"order_id": 5, "product": "VR Headset", "c_id": 100404},
-    {"order_id": 6, "product": "Gaming Laptop", "c_id": 100405}
- ]
-
-# Insert into MongoDB
- result = orders_collection.insert_many(orders)
-
-# ✅ Print actual inserted IDs
- print("Inserted IDs:", result.inserted_ids)
-   # while True:
-    #    text = listen()
+#  try:
+#     speak("How many orders do you want to insert? ")
+#     n = int(input("How many orders do you want to insert? "))
+#  except ValueError:
+#     print("Please enter a valid number.")
+#     exit()
+#  orders = []
+# # Gather user input for each order
+#  for i in range(n):
+#     print(f"\nEnter details for order #{i+1}:")
+#     try:
+#         order_id = int(input("Order ID: "))
+#         product = input("Product Name: ")
+#         c_id = int(input("Customer ID (c_id): "))
+#         order = {
+#             "order_id": order_id,
+#             "product": product,
+#             "c_id": c_id
+#         }
+#         orders.append(order)
+#     except ValueError:
+#         print("Invalid input. Skipping this entry.")
+#         continue
+#     print(order)
+        try:
+            with s.Microphone() as source:
+                speak("Listening for command...")
+                audio = recog.listen(source)
+                command = recog.recognize_google(audio)
+            number = int(command)
+            speak("✅ Recognized integer:", number)
+            #return number
+        except ValueError:
+            speak("❌ Could not convert to integer. You said:",command)
+#    while True:
+#        text = listen()
         #if text and "stop" in text:
         #    break
     # get_weather()
