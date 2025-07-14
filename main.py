@@ -3,9 +3,7 @@ import webbrowser
 import pyttsx3
 import datetime
 import requests
-
-
-
+from pymongo import MongoClient
 # Function to speak text
 def speak(text):
     engine = pyttsx3.init()
@@ -107,9 +105,6 @@ def get_weather():
     except Exception as e:
         speak("There was an error fetching the weather.")
 
-
-
-
 # Function to listen and return recognized text
 def listen():
     recog = s.Recognizer()
@@ -144,12 +139,31 @@ def listen():
         return ""
 
 if __name__ == "__main__":
-    while True:
-        text = listen()
+  # Connect to MongoDB
+ client = MongoClient("mongodb://localhost:27017/")
+ db = client["my_records"]
+ orders_collection = db["orders"]
+
+# Documents to insert
+ orders = [
+    {"order_id": 1, "product": "Ps4", "c_id": 100400},
+    {"order_id": 2, "product": "Xbox Series X", "c_id": 100401},
+    {"order_id": 3, "product": "Nintendo Switch", "c_id": 100402},
+    {"order_id": 4, "product": "Gaming PC", "c_id": 100403},
+    {"order_id": 5, "product": "VR Headset", "c_id": 100404},
+    {"order_id": 6, "product": "Gaming Laptop", "c_id": 100405}
+ ]
+
+# Insert into MongoDB
+ result = orders_collection.insert_many(orders)
+
+# ✅ Print actual inserted IDs
+ print("Inserted IDs:", result.inserted_ids)
+   # while True:
+    #    text = listen()
         #if text and "stop" in text:
         #    break
     # get_weather()
     #get_ip_location()
-   
 #    ip = requests.get("http://api.ipify.org").text
 #    print(ip)
