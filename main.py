@@ -202,69 +202,23 @@ def extract_all_numbers(text):
 
 
 if __name__ == "__main__":  
-  while True:
-    print("Say something...")
-    try:
-        with s.Microphone() as source:
-            print("listening...........")
-            audio = recog.listen(source, timeout=8, phrase_time_limit=1)
-        word = recog.recognize_google(audio)
-        print(word)
-        word = word.lower()
-        if (word == "welcome"):
-            speak("YES")
-            perfom =listen()
-            Process(perfom)
-            #add_records()
-        elif "stop" in word:
-            speak("Exiting... You said stop")
-            print("Exiting... You said end")
-            exit()
-    except Exception as e:
-        print("Error:", e)
-
-
-
-
-
-
-
-
-
-    
-#  try:
-#     speak("How many orders do you want to insert? ")
-#     n = int(input("How many orders do you want to insert? "))
-    
-#     exit()
-#  orders = []
-# # Gather user input for each order
-#  for i in range(n):
-#     print(f"\nEnter details for order #{i+1}:")
+#   while True:
+#     print("Say something...")
 #     try:
-#         order_id = int(input("Order ID: "))
-#         product = input("Product Name: ")
-#         c_id = int(input("Customer ID (c_id): "))
-#         order = {
-#             "order_id": order_id,
-#             "product": product,
-#             "c_id": c_id
-#         }
-#         orders.append(order)
-#     except ValueError:
-#         print("Invalid input. Skipping this entry.")
-#         continue
-#     print(order)
-   
-            
-
-# Attempt to extract number from the full sentence
-
-#    while True:
-#        text = listen()
-        #if text and "stop" in text:
-        #    break
-    # get_weather()
-    #get_ip_location()
-#    ip = requests.get("http://api.ipify.org").text
-#    print(ip)
+#         with s.Microphone() as source:
+#             print("listening...........")
+#             audio = recog.listen(source, timeout=8, phrase_time_limit=1)
+#         word = recog.recognize_google(audio)
+#         print(word)
+#         word = word.lower()
+#         if (word == "welcome"):
+#             speak("YES")
+#             perfom =listen()
+#             Process(perfom)
+#             #add_records()
+#         elif "stop" in word:
+#             speak("Exiting... You said stop")
+#             print("Exiting... You said end")
+#             exit()
+#     except Exception as e:
+#         print("Error:", e)
