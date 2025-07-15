@@ -4,6 +4,7 @@ import pyttsx3
 import datetime
 import requests
 from pymongo import MongoClient
+from word2number import w2n
 
 recog = s.Recognizer()
 client = MongoClient("mongodb://localhost:27017/")
@@ -11,33 +12,55 @@ client = MongoClient("mongodb://localhost:27017/")
 def add_records():
  db = client["my_records"]
  orders_collection = db["orders"]
- try:
-    n = int(input("How many orders do you want to insert? "))
- except ValueError:
-    print("Please enter a valid number.")
-    exit()
+ while True:  
+        speak("Tell number of records")
+        n = extract_all_numbers(listen())
+        if n:
+            speak(f"Records to be entered are:{n[0]}")
+            break
+        else:
+            speak("invalid number")
+
  orders = []
-# Gather user input for each order
- for i in range(n):
+ for i in range(n[0]):
     print(f"\nEnter details for order #{i+1}:")
     try:
-        order_id = int(input("Order ID: "))
-        product = input("Product Name: ")
-        c_id = int(input("Customer ID (c_id): "))
+        while True:
+          speak("Tell order Id")
+          order_id = extract_all_numbers(listen())
+          if order_id:
+                print(order_id[0])
+                break
+          speak("invalid id")
+        while True:
+          speak("Tell product name")
+          product = listen()
+          if product:
+                print(product)
+                break
+          speak("invalid product")
+        while True:
+          speak("Tell customer id")
+          c_id=extract_all_numbers(listen())
+          if c_id:
+                print(c_id[0])
+                break
+          speak("invalid customer id")
         order = {
-            "order_id": order_id,
+            "order_id": order_id[0],
             "product": product,
-            "c_id": c_id
+            "c_id": c_id[0]
         }
         orders.append(order)
     except ValueError:
         print("Invalid input. Skipping this entry.")
         continue
-  # Insert into MongoDB
+  # Insert into database
  if orders:
     result = orders_collection.insert_many(orders)
-    print("\n✅ Orders inserted successfully!")
+    print("\nOrders inserted successfully!")
     print("Inserted IDs:", result.inserted_ids)
+    exit()
  else:
     print("No valid orders to insert.")
 
@@ -55,7 +78,8 @@ def Process(c):
         get_ip_location()
     elif "weather today" in c.lower():
         get_weather()   
-   # elif "add data" in c.lower():    
+    elif "add data" or "add records" in c.lower(): 
+       add_records()
     else:
         speak("I cant understand")
    
@@ -105,9 +129,8 @@ def get_ip_location():
         print("Error:", e)
      
 def get_weather():
-    #city="London"
     city  = requests.get("http://api.ipify.org").text
-    print(city)
+    #print(city)
     api_key = "56f406e1aabd4e69abb192259250207"  
     url = f"http://api.weatherapi.com/v1/current.json?key={api_key}&q={city}"
 
@@ -142,44 +165,77 @@ def get_weather():
     except Exception as e:
         speak("There was an error fetching the weather.")
 
-# Function to listen and return recognized text
 def listen():
+    print("Say something...")
+    try:
+        with s.Microphone() as source:
+                speak("Listening for command...")
+                audio = recog.listen(source)
+                command = recog.recognize_google(audio)
+                print("Command received:", command)
+               # Process(command)
+                if "stop" in command.lower():
+                    speak("Exiting... You said stop")
+                    print("Exiting... You said end")
+                    exit()
+                return command.lower()
+    except Exception as e:
+        print("Error:", e)
+        return ""
+
+def extract_all_numbers(text):
+    words = text.lower().split()
+    numbers = []
+    i = 0
+    while i < len(words):
+        for j in range(len(words), i, -1):
+            chunk = ' '.join(words[i:j])
+            try:
+                num = w2n.word_to_num(chunk)
+                numbers.append(num)
+                i = j - 1 
+                break
+            except ValueError:
+                continue
+        i += 1
+    return numbers
+
+
+if __name__ == "__main__":  
+  while True:
     print("Say something...")
     try:
         with s.Microphone() as source:
             print("listening...........")
             audio = recog.listen(source, timeout=8, phrase_time_limit=1)
-
         word = recog.recognize_google(audio)
         print(word)
         word = word.lower()
         if (word == "welcome"):
             speak("YES")
-            with s.Microphone() as source:
-                speak("Listening for command...")
-                audio = recog.listen(source)
-                command = recog.recognize_google(audio)
-                print("Command received:", command)
-                Process(command)
-                return command.lower()
+            perfom =listen()
+            Process(perfom)
+            #add_records()
         elif "stop" in word:
             speak("Exiting... You said stop")
             print("Exiting... You said end")
             exit()
-        else:
-            print("Say correct word")
-            return word
-
     except Exception as e:
         print("Error:", e)
-        return ""
 
-if __name__ == "__main__":
+
+
+
+
+
+
+
+
+    
 #  try:
 #     speak("How many orders do you want to insert? ")
 #     n = int(input("How many orders do you want to insert? "))
-#  except ValueError:
-#     print("Please enter a valid number.")
+    
 #     exit()
 #  orders = []
 # # Gather user input for each order
@@ -199,16 +255,11 @@ if __name__ == "__main__":
 #         print("Invalid input. Skipping this entry.")
 #         continue
 #     print(order)
-        try:
-            with s.Microphone() as source:
-                speak("Listening for command...")
-                audio = recog.listen(source)
-                command = recog.recognize_google(audio)
-            number = int(command)
-            speak("✅ Recognized integer:", number)
-            #return number
-        except ValueError:
-            speak("❌ Could not convert to integer. You said:",command)
+   
+            
+
+# Attempt to extract number from the full sentence
+
 #    while True:
 #        text = listen()
         #if text and "stop" in text:
