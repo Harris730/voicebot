@@ -200,8 +200,31 @@ def extract_all_numbers(text):
         i += 1
     return numbers
 
+def add_order(order_id, product, c_id):
+    url = "http://localhost:5000/add-items"  # Your Flask POST API
+    payload = {
+        "order_id": order_id,
+        "product": product,
+        "c_id": c_id
+    }
+
+    try:
+        response = requests.post(url, json=payload)
+        
+        if response.status_code == 201:
+            print("✅ Order added successfully!")
+            print("Inserted ID:", response.json().get("id"))
+        else:
+            print("❌ Failed to add order.")
+            print("Status Code:", response.status_code)
+            print("Response:", response.json())
+
+    except Exception as e:
+        print("⚠️ Error:", e)
 
 if __name__ == "__main__":  
+    add_order(123, "Mouse", 456)
+    #add_records()
 #   while True:
 #     print("Say something...")
 #     try:
