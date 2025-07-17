@@ -1,5 +1,5 @@
-from flask import Flask, jsonify, request
-from pymongo import MongoClient
+from flask import Flask, jsonify, request # type: ignore
+from pymongo import MongoClient # type: ignore
 
 app = Flask(__name__)
 client = MongoClient("mongodb://localhost:27017/")
@@ -35,12 +35,6 @@ order33 = [
 @app.post('/add-items')
 def add_items():
     data = request.get_json()
-    
-    if not all(k in data for k in ("order_id", "product", "c_id")):
-        return jsonify({"error": "Missing fields"}), 400
-
-    order33.append(data)
-    return jsonify({"message": "Successfully added", "data": data}), 201
     # # Validate required fields
     # if not all(k in data for k in ("order_id", "product", "c_id")):
     #     return jsonify({"error": "Missing fields. Required: order_id, product, c_id"}), 400
