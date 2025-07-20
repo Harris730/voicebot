@@ -9,6 +9,7 @@ from word2number import w2n
 recog = s.Recognizer()
 client = MongoClient("mongodb://localhost:27017/")
 
+#adding records directly
 def add_records():
  db = client["my_records"]
  orders_collection = db["orders"]
@@ -200,31 +201,24 @@ def extract_all_numbers(text):
         i += 1
     return numbers
 
-def add_order(order_id, product, c_id):
-    url = "http://localhost:5000/add-items"  # Your Flask POST API
+def send_order_to_server(c_id, product, order_id):
+    url = "http://localhost:5000/add-order"
     payload = {
-        "order_id": order_id,
+        "c_id": c_id,
         "product": product,
-        "c_id": c_id
+        "order_id": order_id
     }
 
-    try:
-        response = requests.post(url, json=payload)
-        
-        if response.status_code == 201:
-            print("✅ Order added successfully!")
-            print("Inserted ID:", response.json().get("id"))
-        else:
-            print("❌ Failed to add order.")
-            print("Status Code:", response.status_code)
-            print("Response:", response.json())
+    response = requests.post(url, json=payload)
 
-    except Exception as e:
-        print("⚠️ Error:", e)
+    if response.status_code == 201:
+        print("Order added successfully!")
+        print(response.json())
+    else:    
+        print(response.json())
 
 if __name__ == "__main__":  
-    add_order(123, "Mouse", 456)
-    #add_records()
+    send_order_to_server(125,"CG 125",8888)
 #   while True:
 #     print("Say something...")
 #     try:

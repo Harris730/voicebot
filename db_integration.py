@@ -1,16 +1,14 @@
-from flask import Flask, jsonify, request # type: ignore
+from flask import Flask, jsonify, request
 from pymongo import MongoClient # type: ignore
 
 app = Flask(__name__)
 client = MongoClient("mongodb://localhost:27017/")
-
+db = client["my_records"]
+orders_collection = db["orders"]
 
 @app.get('/get-items')
 def get_items():
    
-    db = client["my_records"]
-    orders_collection = db["orders"]
-
     # Fetch orders and convert to list
     orders = list(orders_collection.find())
     # Convert ObjectId to string for JSON compatibility
@@ -19,39 +17,23 @@ def get_items():
 
     return jsonify(orders)
 
-order33 = [
-    {
-        "order_id": 1115,
-        "product": "screen",
-        "c_id": 10041111
-    },
-    {
-        "order_id": 885,
-        "product": "charger",
-        "c_id": 100425555
-    }
-]
 
-@app.post('/add-items')
-def add_items():
+@app.post("/add-order")
+def add_order():
     data = request.get_json()
-    # # Validate required fields
-    # if not all(k in data for k in ("order_id", "product", "c_id")):
-    #     return jsonify({"error": "Missing fields. Required: order_id, product, c_id"}), 400
+    if not data:
+        return jsonify({"error": "No JSON data provided"}), 400
+    
+    if "order_id" not in data or "product" not in data or "c_id" not in data:
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    if orders_collection.find_one({"order_id": data["order_id"]}):
+        return jsonify({"error": "Order ID already exists"}), 400
+    # Insert into MongoDB
+    result = orders_collection.insert_one(data)
+    data["_id"] = str(result.inserted_id)  # Include _id as string in response
 
-    # # Insert into MongoDB
-    # result = orders_collection.insert_one({
-    #     "order_id": data["order_id"],
-    #     "product": data["product"],
-    #     "c_id": data["c_id"]
-    # })
-
-    # Correct 201 Created response
-   # return jsonify({"message": "Item added", "id": str(result.inserted_id)}), 201
-
-
+    return jsonify({"message": "Order added", "order": data}), 201
 
 
 
-# if __name__ == '__main__':
-#     app.run(debug=True)
