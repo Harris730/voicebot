@@ -9,7 +9,7 @@ from word2number import w2n
 recog = s.Recognizer()
 client = MongoClient("mongodb://localhost:27017/")
 
-#adding records directly
+
 def add_records():
  db = client["my_records"]
  orders_collection = db["orders"]
@@ -25,7 +25,8 @@ def add_records():
  orders = []
  for i in range(n[0]):
     print(f"\nEnter details for order #{i+1}:")
-    try:
+    while True:
+     try:
         while True:
           speak("Tell order Id")
           order_id = extract_all_numbers(listen())
@@ -47,23 +48,28 @@ def add_records():
                 print(c_id[0])
                 break
           speak("invalid customer id")
-        order = {
-            "order_id": order_id[0],
-            "product": product,
-            "c_id": c_id[0]
-        }
-        orders.append(order)
-    except ValueError:
+        url = "http://localhost:5000/add-order"
+        payload = {
+                "order_id": order_id[0],
+                "product": product,
+                "c_id": c_id[0]
+            }
+        response = requests.post(url, json=payload)
+        if response.status_code == 201:
+            print("Order added successfully!")
+            print(response.json())
+            break
+        elif response.status_code == 409:
+            print("Order ID already exists. Please re-enter the order.")
+            speak("Order already exists. Please say a different order ID.")
+            continue 
+        else:
+            print(" Failed to add order.")
+            print(response.status_code, response.json())
+            break
+     except ValueError:
         print("Invalid input. Skipping this entry.")
-        continue
-  # Insert into database
- if orders:
-    result = orders_collection.insert_many(orders)
-    print("\nOrders inserted successfully!")
-    print("Inserted IDs:", result.inserted_ids)
-    exit()
- else:
-    print("No valid orders to insert.")
+        continue 
 
 def speak(text):
     engine = pyttsx3.init()
@@ -201,24 +207,48 @@ def extract_all_numbers(text):
         i += 1
     return numbers
 
-def send_order_to_server(c_id, product, order_id):
-    url = "http://localhost:5000/add-order"
-    payload = {
-        "c_id": c_id,
-        "product": product,
-        "order_id": order_id
-    }
 
-    response = requests.post(url, json=payload)
+def update_order_by_input():
+     db = client["my_records"]
+     orders_collection = db["orders"]
+     try:
+         while True:
+                speak("Tell order id")
+                order_id = extract_all_numbers(listen())
+                existing_order = orders_collection.find_one({"order_id": order_id[0]})
+                if not existing_order:
+                    print(f"No order found with order_id {order_id[0]}. Please try again.")
+                    continue
+                else:
+                    print(f" Found order: {existing_order}")
+                    break
 
-    if response.status_code == 201:
-        print("Order added successfully!")
-        print(response.json())
-    else:    
-        print(response.json())
+        
+         product = input("Enter new product name (leave blank to skip): ")
+         c_id_input =input("Enter new customer ID (leave blank to skip): ")
+         url =f"http://127.0.0.1:5000/update-order/{order_id}"
+        # Build update dictionary
+         update_data = {}
+         if product:
+                 update_data["product"] = product
+         if c_id_input:
+                 update_data["c_id"] = int(c_id_input)
+
+         if not update_data:
+                print("❌ No fields to update. Exiting.")
+                return
+         try:
+            response = requests.put(url, json=update_data)
+            print(response.json())
+         except Exception as e:
+            print("❌ Error while connecting to the server:", e)
+     except ValueError:
+              print("❌ Invalid input.")
+
 
 if __name__ == "__main__":  
-    send_order_to_server(125,"CG 125",8888)
+    update_order_by_input()
+   # send_order_to_server(125,"CG 125",8888)
 #   while True:
 #     print("Say something...")
 #     try:
