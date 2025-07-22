@@ -207,8 +207,7 @@ def extract_all_numbers(text):
         i += 1
     return numbers
 
-
-def update_order_by_input():
+def update_order():
      db = client["my_records"]
      orders_collection = db["orders"]
      try:
@@ -217,38 +216,62 @@ def update_order_by_input():
                 order_id = extract_all_numbers(listen())
                 existing_order = orders_collection.find_one({"order_id": order_id[0]})
                 if not existing_order:
-                    print(f"No order found with order_id {order_id[0]}. Please try again.")
+                    print(f"No order found with order_id {order_id}. Please try again.")
                     continue
                 else:
-                    print(f" Found order: {existing_order}")
+                  #  print(f" Found order: {existing_order}")
                     break
-
-        
-         product = input("Enter new product name (leave blank to skip): ")
-         c_id_input =input("Enter new customer ID (leave blank to skip): ")
-         url =f"http://127.0.0.1:5000/update-order/{order_id}"
-        # Build update dictionary
+         while True:
+            speak("Tell product name")
+            product = listen()
+            if product:
+                    break
+            speak("invalid product")
+         while True:
+            speak("Tell customer id")
+            c_id_input = extract_all_numbers(listen())
+            if c_id_input:
+                break
+            speak("invalid Customer id")
          update_data = {}
          if product:
                  update_data["product"] = product
          if c_id_input:
-                 update_data["c_id"] = int(c_id_input)
+                 update_data["c_id"] = c_id_input[0]
 
          if not update_data:
-                print("❌ No fields to update. Exiting.")
+                print("No fields to update. Exiting.")
                 return
          try:
+            url =f"http://127.0.0.1:5000/update-order/{order_id[0]}"
             response = requests.put(url, json=update_data)
             print(response.json())
          except Exception as e:
-            print("❌ Error while connecting to the server:", e)
+            print(" Error while connecting to the server:", e)
+
      except ValueError:
-              print("❌ Invalid input.")
+              print(" Invalid input.")
 
-
+def get_orders():
+     db = client["my_records"]
+     orders_collection = db["orders"]
+     url = "http://127.0.0.1:5000/get-items"
+     response= requests.get(url)
+     if response.status_code== 200:
+         orders= response.json()
+         for i, order in enumerate(orders):
+             speak (f"For order{1+i}")
+             speak (f"Order_id :{order['order_id']} ")
+             speak (f"Product :{order['product']} ")
+             speak (f"Customer ID :{order['c_id']} ")
+             print(i+1)
+     else:
+         print("unable to get response")     
+         
+            
 if __name__ == "__main__":  
-    update_order_by_input()
-   # send_order_to_server(125,"CG 125",8888)
+    get_orders()
+   
 #   while True:
 #     print("Say something...")
 #     try:
