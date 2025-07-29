@@ -62,7 +62,13 @@ def update_order(order_id):
     else:
         return jsonify({"message": "No changes made"}), 200
 
-
+@app.route('/delete-order/<int:order_id>', methods=['DELETE'])
+def delete_order(order_id):
+    result = orders_collection.delete_one({'order_id': order_id})
+    if result.deleted_count > 0:
+        return jsonify({"message": f"Order {order_id} deleted successfully."}), 200
+    else:
+        return jsonify({"error": f"Order {order_id} not found."}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)

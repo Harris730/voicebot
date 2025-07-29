@@ -253,8 +253,6 @@ def update_order():
               print(" Invalid input.")
 
 def get_orders():
-     db = client["my_records"]
-     orders_collection = db["orders"]
      url = "http://127.0.0.1:5000/get-items"
      response= requests.get(url)
      if response.status_code== 200:
@@ -267,10 +265,19 @@ def get_orders():
              print(i+1)
      else:
          print("unable to get response")     
-         
-            
+
+def delete_order():
+        order_id= int(input("Enter order_id :"))
+        url = "http://127.0.0.1:5000/delete-order/{order_id}"
+        response = requests.delete(url)
+        if response.status_code == 200:
+            print(response.json()["message"])
+        else:
+            print(response.json()["error"])
+
+
 if __name__ == "__main__":  
-    get_orders()
+    delete_order()
    
 #   while True:
 #     print("Say something...")
