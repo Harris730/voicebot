@@ -267,7 +267,8 @@ def get_orders():
          print("unable to get response")     
 
 def delete_order():
-        order_id= int(input("Enter order_id :"))
+        speak("Enter order_id :")
+        order_id= extract_all_numbers(listen())
         url = "http://127.0.0.1:5000/delete-order/{order_id}"
         response = requests.delete(url)
         if response.status_code == 200:
