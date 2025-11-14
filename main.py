@@ -73,7 +73,7 @@ def get_ip_location():
 def get_weather():
     city  = requests.get("http://api.ipify.org").text
     #print(city)
-    api_key = "56f406e1aabd4e69abb192259250207"  
+    api_key = "API_Key"  
     url = f"http://api.weatherapi.com/v1/current.json?key={api_key}&q={city}"
 
     try:
