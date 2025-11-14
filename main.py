@@ -142,7 +142,7 @@ def extract_all_numbers(text):
     return numbers
 
 def gemini_chat(user_input):
-    API_KEY = "AIzaSyBpmbhirCwNPzFTaLmfgy0GMv0uhCxLP94"
+    API_KEY = "API_Key"
     URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
     headers = {
